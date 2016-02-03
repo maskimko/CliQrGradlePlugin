@@ -1,0 +1,18 @@
+buildscript {
+    repositories {
+        maven {
+            url uri('/tmp/lmr')
+        }
+    }
+    dependencies {
+        classpath group: 'ua.pp.msk.gradle',
+                   name: 'CliQrGradlePlugin',
+                version: '1.0-SNAPSHOT'
+    }
+}
+apply plugin: 'test-plugin'
+
+task checkitout(type: ua.pp.msk.gradle.RunTask) {
+    println("running consumer task!")
+}
+
