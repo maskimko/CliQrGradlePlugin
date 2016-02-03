@@ -1,21 +1,20 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 
-dependencies {
-    compile gradleApi()
-}
-
-
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
+    compile gradleApi()
+    compile 'ua.pp.msk.cliqr:CliQrClient:0.1'
     testCompile 'junit:junit:4.11'
 }
 
 group = 'ua.pp.msk.gradle'
-version = '1.0-SNAPSHOT'
+version = '1.0.2-SNAPSHOT'
+
 
 uploadArchives {
     repositories {

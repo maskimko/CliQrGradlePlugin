@@ -2,13 +2,16 @@ package ua.pp.msk.gradle;
 
 import org.gradle.api.Project;
 import org.gradle.api.Plugin;
-import org.gradle.api.Task;
 
 public class CliQrJavaPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project target) {
-        Task task = target.task("dummyTask");
+        //target.task(new HashMap<String, Object>(){{put("type", DummyTask.class);}}, "applytask");
+        target.getTasks().create("infoTask", InfoTask.class);
+        target.getTasks().create("runTask", RunTask.class);
+        target.getExtensions().create("cliqr", CliQrPluginExtension.class);
+      
     }
 
 }
