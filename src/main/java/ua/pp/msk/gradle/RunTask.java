@@ -17,17 +17,21 @@ public class RunTask extends DefaultTask {
     @TaskAction
     public void start() {
         getLogger().info("Starting Run task");
-        CliQrPluginExtension extension = getProject().getExtensions().findByType(CliQrPluginExtension.class);
-        if (extension == null) {
-            extension = new CliQrPluginExtension();
+        RunTaskExtension rtx = getProject().getExtensions().findByType(RunTaskExtension.class);
+        if (rtx == null) {
+            rtx = new RunTaskExtension();
+        }
+        CliQrExtension cx = getProject().getExtensions().findByType(CliQrExtension.class);
+        if (cx == null) {
+            cx = new CliQrExtension();
         }
 
-        getLogger().debug("CliQr host " + extension.getHost());
-        getLogger().debug("CliQr user " + extension.getUser());
-        getLogger().debug("CliQr apiKey " + extension.getApiKey());
-        getLogger().debug("CliQr Job Id " + extension.getJobId());
+        getLogger().debug("CliQr host " + cx.getHost());
+        getLogger().debug("CliQr user " + cx.getUser());
+        getLogger().debug("CliQr apiKey " + cx.getApiKey());
+        getLogger().debug("CliQr Job Id " + rtx.getJobId());
         getLogger().debug("CliQr Environment Pairs ");
-        extension.getEnvPairs().forEach((var, val) -> {
+        rtx.getEnvPairs().forEach((var, val) -> {
             getLogger().debug(String.format("%30s = %s", var, val));
         });
 

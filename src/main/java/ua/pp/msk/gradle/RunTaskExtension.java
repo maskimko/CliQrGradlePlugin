@@ -12,37 +12,10 @@ import java.util.Map;
  *
  * @author Maksym Shkolnyi aka maskimko
  */
-public class CliQrPluginExtension {
+public class RunTaskExtension {
 
-    private String host = null;
-    private String user = null;
-    private String apiKey = null;
     private int jobId = -1;
     private Map<String, String> envPairs = new HashMap<>();
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public String getApiKey() {
-        return apiKey;
-    }
-
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
 
     public int getJobId() {
         return jobId;
@@ -59,8 +32,5 @@ public class CliQrPluginExtension {
     public void setEnvPairs(Map<String, String> envPairs) {
         this.envPairs = envPairs;
     }
-    
-    
-  
 
 }

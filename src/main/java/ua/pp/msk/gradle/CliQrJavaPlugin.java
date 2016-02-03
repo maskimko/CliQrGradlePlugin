@@ -10,7 +10,8 @@ public class CliQrJavaPlugin implements Plugin<Project> {
         //target.task(new HashMap<String, Object>(){{put("type", DummyTask.class);}}, "applytask");
         target.getTasks().create("infoTask", InfoTask.class);
         target.getTasks().create("runTask", RunTask.class);
-        target.getExtensions().create("cliqr", CliQrPluginExtension.class);
+        target.getExtensions().create("runJob", RunTaskExtension.class);
+        target.getExtensions().create("cliqr", CliQrExtension.class);
       
     }
 

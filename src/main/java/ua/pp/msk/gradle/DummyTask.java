@@ -28,14 +28,14 @@ public class DummyTask extends DefaultTask {
     @TaskAction
     public void dummyTask() {
         System.out.println("It is a very dummy plugin yet. Hello!!!");
-       
-        CliQrPluginExtension ext = getProject().getExtensions().findByType(CliQrPluginExtension.class);
-        if (ext == null) {
-            ext = new CliQrPluginExtension();
-            ext.setHost("localhost");
-        }
-        
-        System.out.println("CliQr hostname: " + ext.getHost());
+//       
+//        RunTaskExtension ext = getProject().getExtensions().findByType(RunTaskExtension.class);
+//        if (ext == null) {
+//            ext = new RunTaskExtension();
+//            ext.setHost("localhost");
+//        }
+//        
+//        System.out.println("CliQr hostname: " + ext.getHost());
         if (someFile != null && someFile.length() > 0 ){
             try (FileWriter fw = new FileWriter(getFile())) {
                getLogger().warn(getFile().getAbsolutePath());
