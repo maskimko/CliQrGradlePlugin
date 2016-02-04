@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ua.pp.msk.gradle;
+package ua.pp.msk.gradle.ext;
 
 /**
  *
@@ -11,7 +11,7 @@ package ua.pp.msk.gradle;
  */
 public class CliQrExtension {
 
-    private String host = null;
+    private String host = "cliqrmee-msdc02.ds.dtveng.net";
     private String user = "cicdgroup_5";
     private String apiKey = "16EE49C5337B327D";
     public String getHost() {

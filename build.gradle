@@ -3,19 +3,19 @@ apply plugin: 'maven'
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 dependencies {
     compile gradleApi()
-    //compile 'ua.pp.msk.cliqr:CliQrClient:0.1'
-  //  compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.2'
+    //compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.2'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.10'
+   // compile group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
+    // compile 'org.apache.httpcomponents:httpcore:4.2.2'
     testCompile 'junit:junit:4.11'
 }
 
 group = 'ua.pp.msk.gradle'
-version = '1.0.2-SNAPSHOT'
+version = '0.6'
 
 
 uploadArchives {

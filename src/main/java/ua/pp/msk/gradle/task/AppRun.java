@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ua.pp.msk.gradle;
+package ua.pp.msk.gradle.task;
 
+import ua.pp.msk.gradle.ext.CliQrExtension;
+import ua.pp.msk.gradle.ext.AppRunExtension;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 import ua.pp.msk.cliqr.PostProcessorImpl;
@@ -22,14 +22,14 @@ import ua.pp.msk.cliqr.exceptions.RunJobException;
  *
  * @author Maksym Shkolnyi aka maskimko
  */
-public class RunTask extends DefaultTask {
+public class AppRun extends DefaultTask {
 
     @TaskAction
     public void start() {
         getLogger().info("Starting Run task");
-        RunTaskExtension rtx = getProject().getExtensions().findByType(RunTaskExtension.class);
+        AppRunExtension rtx = getProject().getExtensions().findByType(AppRunExtension.class);
         if (rtx == null) {
-            rtx = new RunTaskExtension();
+            rtx = new AppRunExtension();
         }
         CliQrExtension cx = getProject().getExtensions().findByType(CliQrExtension.class);
         if (cx == null) {
@@ -39,7 +39,7 @@ public class RunTask extends DefaultTask {
         getLogger().debug("CliQr host " + cx.getHost());
         getLogger().debug("CliQr user " + cx.getUser());
         getLogger().debug("CliQr apiKey " + cx.getApiKey());
-        getLogger().debug("CliQr Job Id " + rtx.getJobId());
+        getLogger().debug("CliQr App Id " + rtx.getAppId());
         getLogger().debug("CliQr Environment Pairs ");
         rtx.getEnvPairs().forEach((var, val) -> {
             getLogger().debug(String.format("%30s = %s", var, val));
@@ -58,12 +58,12 @@ public class RunTask extends DefaultTask {
         }
         try {
             if (rj != null) {
-                rj.startJob(rtx.getJobId(), rtx.getEnvPairs());
+                rj.startJob(rtx.getAppId(), rtx.getEnvPairs());
             } else {
                 throw new RunJobException("Run job has been not initialized");
             }
         } catch (RunJobException | MissingParameterException ex) {
-            getLogger().error("Cannot run job " + rtx.getJobId(), ex);
+            getLogger().error("Cannot run CliQr app " + rtx.getAppId(), ex);
         }
     }
 }

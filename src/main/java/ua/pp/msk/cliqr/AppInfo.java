@@ -15,7 +15,7 @@ import java.net.MalformedURLException;
  */
 public interface AppInfo {
 
-    public void getAppInfo(int appNumber) throws MalformedURLException, ClientSslException, ResponseException;
-    public void getAppInfo() throws MalformedURLException, ClientSslException, ResponseException;
-    public void getAppInfo(String url) throws MalformedURLException, ClientSslException, ResponseException;
+    public String getAppInfo(int appNumber) throws MalformedURLException, ClientSslException, ResponseException;
+    public String getAppInfo() throws MalformedURLException, ClientSslException, ResponseException;
+    public String getAppInfo(String url) throws MalformedURLException, ClientSslException, ResponseException;
 }

@@ -22,20 +22,20 @@ public class AppInfoImpl extends InfoImpl implements AppInfo{
     }
 
      @Override
-    public void getAppInfo(int appNumber) throws MalformedURLException, ClientSslException, ResponseException {
-        System.out.println(getInfo("apps/"+appNumber));
+    public String getAppInfo(int appNumber) throws MalformedURLException, ClientSslException, ResponseException {
+        return getInfo("apps/"+appNumber);
     }
 
     @Override
-    public void getAppInfo() throws MalformedURLException, ClientSslException, ResponseException {
-        System.out.println(getInfo("apps"));
+    public String getAppInfo() throws MalformedURLException, ClientSslException, ResponseException {
+       return getInfo("apps");
     }
 
     @Override
-    public void getAppInfo(String url) throws MalformedURLException, ClientSslException, ResponseException {
+    public String getAppInfo(String url) throws MalformedURLException, ClientSslException, ResponseException {
        URL u = new URL(url);
         GetProcessor gp = new GetProcessorImpl(new URL("https://" + host), user, apiKey);
         String response = gp.getResponse(u);
-        System.out.println(response);
+       return response;
     }
 }

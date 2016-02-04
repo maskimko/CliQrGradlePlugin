@@ -1,11 +1,11 @@
-package ua.pp.msk.gradle;
+package ua.pp.msk.gradle.task;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
-
+@Deprecated
 public class DummyTask extends DefaultTask {
 
     private String someFile = null;
