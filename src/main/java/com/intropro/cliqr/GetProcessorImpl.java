@@ -12,31 +12,33 @@ import com.intropro.cliqr.exceptions.ClientSslException;
 import com.intropro.cliqr.exceptions.ResponseException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.logging.Level;
+import java.security.UnrecoverableKeyException;
 import javax.net.ssl.SSLContext;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.protocol.ClientContextConfigurer;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +51,8 @@ public class GetProcessorImpl implements GetProcessor {
 
     private URL targetUrl;
     private final Logger logger;
-    private CloseableHttpClient client;
-    private HttpClientContext context;
+    private HttpClient client;
+    private HttpContext context;
     private final ResponseHelper responseHelper;
 
     {
@@ -102,13 +104,13 @@ public class GetProcessorImpl implements GetProcessor {
         cProvider.setCredentials(new AuthScope(htHost), creds);
         logger.debug("Credential provider: " + cProvider.toString());
 
-        context = new HttpClientContext();
-        context.setAuthCache(aCache);
-        context.setCredentialsProvider(cProvider);
-        SSLConnectionSocketFactory sslConnectionSocketFactory = null;
+        context = new BasicHttpContext();
+        ClientContextConfigurer cliCon = new ClientContextConfigurer(context);
+        cliCon.setCredentialsProvider(cProvider);
+        context.setAttribute(ClientContext.AUTH_CACHE, aCache);
+        SSLSocketFactory sslConnectionSocketFactory = null;
         try {
-            SSLContext trustySslContext = SSLContextBuilder.create().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build();
-            sslConnectionSocketFactory = new SSLConnectionSocketFactory(trustySslContext, new CliQrHostnameVerifier());
+            sslConnectionSocketFactory = new SSLSocketFactory(new TrustSelfSignedStrategy(), new CliQrHostnameVerifier());
         } catch (KeyManagementException ex) {
             logger.error("Cannot manage secure keys", ex);
             throw new ClientSslException("Cannot manage secure keys", ex);
@@ -118,13 +120,18 @@ public class GetProcessorImpl implements GetProcessor {
         } catch (NoSuchAlgorithmException ex) {
             logger.error("Unsupported security algorithm", ex);
             throw new ClientSslException("Unsupported security algorithm", ex);
+        } catch (UnrecoverableKeyException ex) {
+            logger.error("Unrecoverable key", ex);
+            throw new ClientSslException("Unrecoverrable key", ex);
         }
-        client = HttpClientBuilder.create()
-                .setSSLSocketFactory(sslConnectionSocketFactory)
-                .setRedirectStrategy(new CliQrRedirectStrategy())
-                .setDefaultCredentialsProvider(cProvider)
-                .setTargetAuthenticationStrategy(TargetAuthenticationStrategy.INSTANCE)
-                .build();
+
+        DefaultHttpClient defClient = new DefaultHttpClient();
+        defClient.setRedirectStrategy(new CliQrRedirectStrategy());
+        defClient.setCredentialsProvider(cProvider);
+        Scheme https = new Scheme("https", 443, sslConnectionSocketFactory);
+        defClient.getConnectionManager().getSchemeRegistry().register(https);
+        defClient.setTargetAuthenticationStrategy(new TargetAuthenticationStrategy());
+        client = defClient;
     }
 
     @Override
@@ -136,8 +143,8 @@ public class GetProcessorImpl implements GetProcessor {
         getRequest.setHeader(new BasicHeader("X-CLIQR-API-KEY-AUTH", "true"));
         getRequest.setHeader(new BasicHeader("Content-Type", "application/json"));
         getRequest.setHeader(new BasicHeader("Accept", "application/json"));
-
-        try (CloseableHttpResponse getResponse = client.execute(getRequest, context)) {
+        try {
+            HttpResponse getResponse = client.execute(getRequest, context);
             HttpEntity entity = getResponse.getEntity();
             logger.debug("Content-type: " + entity.getContentType().getName() + "=" + entity.getContentType().getValue());
             logger.debug("Status line: " + getResponse.getStatusLine());

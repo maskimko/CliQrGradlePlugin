@@ -7,6 +7,7 @@
 package ua.pp.msk.gradle;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.TaskAction;
 
 /**

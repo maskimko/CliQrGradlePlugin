@@ -17,25 +17,28 @@ import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import javax.net.ssl.SSLContext;
+import java.security.UnrecoverableKeyException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.ChallengeState;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.protocol.ClientContextConfigurer;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
-import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,9 +51,9 @@ public class PostProcessorImpl implements PostProcessor {
 
     private URL targetUrl;
     private final Logger logger;
-    private CloseableHttpClient client;
+    private HttpClient client;
     private final ResponseHelper responseHelper;
-    private HttpClientContext context;
+    private HttpContext context;
 
     {
         logger = LoggerFactory.getLogger(this.getClass());
@@ -90,23 +93,28 @@ public class PostProcessorImpl implements PostProcessor {
         this.targetUrl = url;
         HttpHost htHost = new HttpHost(targetUrl.getHost(), targetUrl.getPort(), targetUrl.getProtocol());
 
-        AuthCache aCache = new BasicAuthCache();
-        BasicScheme basicAuth = new BasicScheme();
+        BasicAuthCache aCache = new BasicAuthCache();
+        BasicScheme basicAuth = new BasicScheme(ChallengeState.TARGET);
         aCache.put(htHost, basicAuth);
+        
 
         UsernamePasswordCredentials creds = new UsernamePasswordCredentials(user, password);
         BasicCredentialsProvider cProvider = new BasicCredentialsProvider();
         cProvider.setCredentials(new AuthScope(htHost), creds);
         logger.debug("Credential provider: " + cProvider.toString());
 
-        context = new HttpClientContext();
-        context.setAuthCache(aCache);
-        context.setCredentialsProvider(cProvider);
-        SSLConnectionSocketFactory sslConnectionSocketFactory = null;
+        context = new BasicHttpContext();
+        ClientContextConfigurer cliCon = new ClientContextConfigurer(context);
+        context.setAttribute(ClientContext.AUTH_CACHE, aCache);
+        //context.setAuthCache(aCache);
+        cliCon.setCredentialsProvider(cProvider);
+        //context.setCredentialsProvider(cProvider);
+        SSLSocketFactory sslSocketFactory = null;
         try {
-            SSLContext trustySslContext = SSLContextBuilder.create().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build();
-            sslConnectionSocketFactory = new SSLConnectionSocketFactory(trustySslContext, new CliQrHostnameVerifier());
-        } catch (KeyManagementException ex) {
+            //SSLContext trustySslContext = SSLContextBuilder.create().loadTrustMaterial( new TrustSelfSignedStrategy()).build();
+            //sslConnectionSocketFactory = new SSLConnectionSocketFactory(trustySslContext, new CliQrHostnameVerifier());
+            sslSocketFactory = new SSLSocketFactory(new TrustSelfSignedStrategy(), new CliQrHostnameVerifier());
+       } catch (KeyManagementException ex) {
             logger.error("Cannot manage secure keys", ex);
             throw new ClientSslException("Cannot manage secure keys", ex);
         } catch (KeyStoreException ex) {
@@ -115,13 +123,24 @@ public class PostProcessorImpl implements PostProcessor {
         } catch (NoSuchAlgorithmException ex) {
             logger.error("Unsupported security algorithm", ex);
             throw new ClientSslException("Unsupported security algorithm", ex);
+        } catch (UnrecoverableKeyException ex) {
+            logger.error("Unrecoverable key", ex);
+            throw new ClientSslException("Unrecoverrable key", ex);
         }
-        client = HttpClientBuilder.create()
-                .setSSLSocketFactory(sslConnectionSocketFactory)
-                .setRedirectStrategy(new CliQrRedirectStrategy())
-                .setDefaultCredentialsProvider(cProvider)
-                .setTargetAuthenticationStrategy(TargetAuthenticationStrategy.INSTANCE)
-                .build();
+        
+        DefaultHttpClient defClient = new DefaultHttpClient();
+        defClient.setRedirectStrategy(new CliQrRedirectStrategy());
+        defClient.setCredentialsProvider(cProvider);
+        Scheme https = new Scheme("https", 443, sslSocketFactory);
+        defClient.getConnectionManager().getSchemeRegistry().register(https);
+        defClient.setTargetAuthenticationStrategy(new TargetAuthenticationStrategy());
+//        client = HttpClientBuilder.create()
+//                .setSSLSocketFactory(sslSocketFactory)
+//                .setRedirectStrategy(new CliQrRedirectStrategy())
+//                .setDefaultCredentialsProvider(cProvider)
+//                .setTargetAuthenticationStrategy(TargetAuthenticationStrategy.INSTANCE)
+//                .build();
+        client = defClient;
     }
 
     @Override
@@ -134,8 +153,7 @@ public class PostProcessorImpl implements PostProcessor {
             httpPost.setHeader("X-CLIQR-API-KEY-AUTH", "true");
             StringEntity sEntity = new StringEntity(responseHelper.jsonToString(json));
             httpPost.setEntity(sEntity);
-            try (CloseableHttpResponse postResponse = client.execute(httpPost, context)) {
-                //TODO Check if it works
+            HttpResponse  postResponse = client.execute(httpPost, context);
                 logger.debug("Status line: " + postResponse.getStatusLine().toString());
                 int statusCode = postResponse.getStatusLine().getStatusCode();
                 switch (statusCode) {
@@ -154,7 +172,7 @@ public class PostProcessorImpl implements PostProcessor {
                 // do something useful with the response body
                 // and ensure it is fully consumed
                 EntityUtils.consume(entity);
-            }
+         
         } catch (UnsupportedEncodingException ex) {
             logger.error("Encoding is unsuported ", ex);
         } catch (IOException ex) {

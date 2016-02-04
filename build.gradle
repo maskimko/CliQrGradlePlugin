@@ -9,6 +9,8 @@ repositories {
 dependencies {
     compile gradleApi()
     //compile 'ua.pp.msk.cliqr:CliQrClient:0.1'
+  //  compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.2'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.10'
     testCompile 'junit:junit:4.11'
 }
 

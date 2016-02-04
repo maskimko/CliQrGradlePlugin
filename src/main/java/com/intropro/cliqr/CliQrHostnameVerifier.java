@@ -6,6 +6,7 @@
 
 package com.intropro.cliqr;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
@@ -15,6 +16,8 @@ import java.util.List;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,9 +27,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Maksym Shkolnyi aka maskimko
  */
-public class CliQrHostnameVerifier implements HostnameVerifier {
+public class CliQrHostnameVerifier implements X509HostnameVerifier, HostnameVerifier {
 
-    private Logger logger = LoggerFactory.getLogger(CliQrHostnameVerifier.class); 
+    private final Logger logger = LoggerFactory.getLogger(CliQrHostnameVerifier.class); 
     
     @Override
     public boolean verify(String host, SSLSession sslSession) {
@@ -41,24 +44,39 @@ public class CliQrHostnameVerifier implements HostnameVerifier {
         return true;
     }
     
+    @Override
     public final void verify(String host, X509Certificate cert) throws SSLException{
         Principal subjectDN = cert.getSubjectDN();
         try {
         Collection<List<?>> subjectAlternativeNames = cert.getSubjectAlternativeNames();
         if (subjectAlternativeNames != null) {
-        for (List<?> subList : subjectAlternativeNames) {
-            logger.debug("Processing alternative");
-            StringBuilder sb = new StringBuilder();
-            for (Object o : subList) {
-                sb.append(o.toString()).append(", ");
-            }
-            logger.debug(sb.toString());
-        }
+            subjectAlternativeNames.stream().map((subList) -> {
+                logger.debug("Processing alternative");
+                return subList;
+            }).map((subList) -> {
+                StringBuilder sb = new StringBuilder();
+                subList.stream().forEach((o) -> {
+                    sb.append(o.toString()).append(", ");
+                }); return sb;
+            }).forEach((sb) -> {
+                logger.debug(sb.toString());
+            });
         }
         } catch (CertificateParsingException ex) {
             logger.info("It is useful to ignore such king of exceptions", ex);
         }
         logger.debug("Subject distiguished name: " + subjectDN.getName());
+    }
+
+    @Override
+    public void verify(String host, SSLSocket ssls) throws IOException {
+       verify(host, ssls.getSession());
+    }
+
+    @Override
+    public void verify(String string, String[] strings, String[] strings1) throws SSLException {
+        //Do nothing
+        logger.debug("Skip verification of ssl certificate. Doing nothing.");
     }
     
 }
