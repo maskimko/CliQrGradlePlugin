@@ -8,7 +8,7 @@ repositories {
 
 dependencies {
     compile gradleApi()
-    compile 'ua.pp.msk.cliqr:CliQrClient:0.1'
+    //compile 'ua.pp.msk.cliqr:CliQrClient:0.1'
     testCompile 'junit:junit:4.11'
 }
 
