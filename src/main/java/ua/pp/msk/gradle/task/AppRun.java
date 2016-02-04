@@ -40,8 +40,9 @@ public class AppRun extends DefaultTask {
         getLogger().debug("CliQr user " + cx.getUser());
         getLogger().debug("CliQr apiKey " + cx.getApiKey());
         getLogger().debug("CliQr App Id " + rtx.getAppId());
+        getLogger().debug("CliQr Service Tier Id " + rtx.getServiceTierId());
         getLogger().debug("CliQr Environment Pairs ");
-        rtx.getEnvPairs().forEach((var, val) -> {
+        rtx.getParams().forEach((var, val) -> {
             getLogger().debug(String.format("%30s = %s", var, val));
         });
         RunJob rj = null;
@@ -58,7 +59,8 @@ public class AppRun extends DefaultTask {
         }
         try {
             if (rj != null) {
-                rj.startJob(rtx.getAppId(), rtx.getEnvPairs());
+                rj.startJob(rtx.getAppId(), rtx.getServiceTierId(), rtx.getAppName(), rtx.getCloud(), rtx.getVpcId(),
+                        rtx.getNetwork(), rtx.getEnvironment(), rtx.getInstanceSize(), rtx.isPublicIp(), rtx.getParams());
             } else {
                 throw new RunJobException("Run job has been not initialized");
             }

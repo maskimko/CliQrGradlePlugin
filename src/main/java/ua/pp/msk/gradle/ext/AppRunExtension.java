@@ -15,14 +15,25 @@ import java.util.Map;
 public class AppRunExtension {
 
     private int appId = -1;
-    private String serviceTierId;
-    private String appName;
-    private String vpcId;
-    private String attachPublicIP = "false";
-    private String subnetId;
-   //Job service tier id
-    private String jobSTId;
-    private Map<String, String> envPairs = new HashMap<>();
+    private String environment = null;
+    private String instanceSize = null;
+    private String appName = null;
+    private String serviceTierId = appName + "-" + appId;
+
+    private String vpcId = null;
+    private String sId = null;
+    private String cloud = null;
+    private boolean publicIp = false;
+
+    public String getCloud() {
+        return cloud;
+    }
+
+    public void setCloud(String cloud) {
+        this.cloud = cloud;
+    }
+
+    private Map<String, String> params = new HashMap<>();
 
     public int getAppId() {
         return appId;
@@ -38,6 +49,30 @@ public class AppRunExtension {
 
     public void setServiceTierId(String serviceTierId) {
         this.serviceTierId = serviceTierId;
+    }
+
+    public Map<String, String> getParams() {
+        return params;
+    }
+
+    public void setParams(Map<String, String> params) {
+        this.params = params;
+    }
+
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
+    }
+
+    public String getInstanceSize() {
+        return instanceSize;
+    }
+
+    public void setInstanceSize(String instanceSize) {
+        this.instanceSize = instanceSize;
     }
 
     public String getAppName() {
@@ -56,38 +91,20 @@ public class AppRunExtension {
         this.vpcId = vpcId;
     }
 
-    public String getAttachPublicIP() {
-        return attachPublicIP;
+    public String getNetwork() {
+        return sId;
     }
 
-    public void setAttachPublicIP(String attachPublicIP) {
-        this.attachPublicIP = attachPublicIP;
+    public void setNetwork(String sId) {
+        this.sId = sId;
     }
 
-    public String getSubnetId() {
-        return subnetId;
+    public boolean isPublicIp() {
+        return publicIp;
     }
 
-    public void setSubnetId(String subnetId) {
-        this.subnetId = subnetId;
+    public void setPublicIp(boolean publicIp) {
+        this.publicIp = publicIp;
     }
-
-    public String getJobSTId() {
-        return jobSTId;
-    }
-
-    public void setJobSTId(String jobSTId) {
-        this.jobSTId = jobSTId;
-    }
-
-    public Map<String, String> getEnvPairs() {
-        return envPairs;
-    }
-
-    public void setEnvPairs(Map<String, String> envPairs) {
-        this.envPairs = envPairs;
-    }
-
-   
 
 }

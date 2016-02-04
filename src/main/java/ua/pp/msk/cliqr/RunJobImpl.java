@@ -96,13 +96,13 @@ public class RunJobImpl implements RunJob {
     }
 
     @Override
-    public void startJob(int jobId, String file) throws RunJobException, MissingParameterException {
+    public void startJob(int jobId, int serviceTierId, String file) throws RunJobException, MissingParameterException {
         Path filePath = Paths.get(file);
-        startJob(jobId, filePath.toFile());
+        startJob(jobId, serviceTierId, filePath.toFile());
     }
 
     @Override
-    public void startJob(int jobId, File file) throws RunJobException, MissingParameterException {
+    public void startJob(int jobId, int serviceTierId, File file) throws RunJobException, MissingParameterException {
         if (!file.exists()) {
             logger.error("File you provide does not exist");
             return;
@@ -125,6 +125,7 @@ public class RunJobImpl implements RunJob {
                 }
                 counter++;
             }
+           properties.put(Validator.SERVICETIERID, ""+serviceTierId);
             startJob(jobId, properties);
         } catch (FileNotFoundException ex) {
             throw new RunJobException("Cannot run the job, because specified file " + file.getAbsolutePath() + "was not found", ex);
@@ -137,31 +138,29 @@ public class RunJobImpl implements RunJob {
     public void startJob(int jobId, Map<String, String> options) throws MissingParameterException {
         //Logging
         if (logger.isDebugEnabled()) {
-            if (options.isEmpty() ) {
+            if (options.isEmpty()) {
                 logger.warn("We received an empty options map");
             } else {
                 logger.debug("These options have been passed to the startJob method");
-                Set<Entry<String, String>> entrySet = options.entrySet();
-                for (Map.Entry<String, String> entry : entrySet) {
-                    logger.debug(entry.getKey() + " = " + entry.getValue());
-                }
+                options.forEach((k, v) -> {
+                    logger.debug(k + " = " + v);
+                });
             }
         }
         //End of logging
         JsonObject jo = new JsonObject();
+
+        String sti = (options.containsKey(Validator.SERVICETIERID)) ? options.get("serviceTierId") : options.get(APPNAME) + "-" + options.get(APPID);
+        jo.addProperty(Validator.SERVICETIERID, sti);
+        options.put(Validator.SERVICETIERID, sti);
+
         if (!options.containsKey(APPNAME) && !options.containsKey(Validator.SERVICETIERID)) {
             throw new MissingParameterException("You should provide application name or service tier id");
         }
         if (!options.containsKey(APPID) && !options.containsKey(Validator.SERVICETIERID)) {
             throw new MissingParameterException("You should provide application id or service tier id");
         }
-        if (options.containsKey(Validator.SERVICETIERID)) {
-            String serviceTierId = options.get("serviceTierId");
-            jo.addProperty(Validator.SERVICETIERID, serviceTierId);
-        } else {
-            String serviceTierId = options.get(APPNAME) + "-" + options.get(APPID);
-            jo.addProperty(Validator.SERVICETIERID, serviceTierId);
-        }
+
         if (!options.containsKey(Validator.CLOUD)) {
             throw new MissingParameterException("You must provide cloud name");
         }
@@ -169,7 +168,7 @@ public class RunJobImpl implements RunJob {
             throw new MissingParameterException("You must provide VPC ID");
         }
 
-        if (!options.containsKey(SID)) {
+        if (!options.containsKey(NETWORK)) {
             throw new MissingParameterException("You must provide subnet id");
         }
 
@@ -180,7 +179,7 @@ public class RunJobImpl implements RunJob {
             throw new MissingParameterException("You must provide environment name");
         }
 
-               if (!options.containsKey(Validator.INSTANCE)) {
+        if (!options.containsKey(Validator.INSTANCE)) {
             logger.warn("Instance ID is not defined. Will use \"m1.small\"");
         }
 
@@ -196,7 +195,7 @@ public class RunJobImpl implements RunJob {
 
         cloudProperties.add(getJsonPairObject(VPCID, options.get(VPCID)));
         cloudProperties.add(getJsonPairObject(PIP, options.get(PIP)));
-        cloudProperties.add(getJsonPairObject(SID, options.get(SID)));
+        cloudProperties.add(getJsonPairObject(NETWORK, options.get(NETWORK)));
 
         cloudParameters.addProperty(Validator.CLOUD, options.get(Validator.CLOUD));
         cloudParameters.addProperty(Validator.INSTANCE, options.get(Validator.INSTANCE));
@@ -278,7 +277,7 @@ public class RunJobImpl implements RunJob {
             case Validator.ENVIRONMENT:
             case VPCID:
             case PIP:
-            case SID:
+            case NETWORK:
             case JOBSERVICETIERID:
             case Validator.CLOUD:
             case Validator.INSTANCE:
@@ -288,5 +287,21 @@ public class RunJobImpl implements RunJob {
                 result = true;
         }
         return result;
+    }
+
+    @Override
+    public void startJob(int jobId, String serviceTierId, String appName, 
+            String cloudName, String vpcId, String network, String env, 
+            String inst, boolean apip, Map<String, String> envPairs) throws  MissingParameterException {
+        
+        envPairs.put(Validator.SERVICETIERID, serviceTierId);
+        envPairs.put(Validator.NAME, appName);
+        envPairs.put(Validator.CLOUD, cloudName);
+        envPairs.put(VPCID, vpcId);
+        envPairs.put(NETWORK, network);
+        envPairs.put(Validator.ENVIRONMENT, env);
+        envPairs.put(Validator.INSTANCE, inst);
+        envPairs.put(PIP, ""+apip);
+        startJob(jobId, envPairs);
     }
 }
