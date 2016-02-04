@@ -12,9 +12,8 @@ package ua.pp.msk.gradle;
 public class CliQrExtension {
 
     private String host = null;
-    private String user = null;
-    private String apiKey = null;
-
+    private String user = "cicdgroup_5";
+    private String apiKey = "16EE49C5337B327D";
     public String getHost() {
         return host;
     }
