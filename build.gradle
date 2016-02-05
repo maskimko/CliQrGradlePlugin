@@ -1,5 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
 
 repositories {
     mavenCentral()
@@ -20,19 +22,101 @@ dependencies {
     compile gradleApi()
     //compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.2'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.10'
-   // compile group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
+    // compile group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
     // compile 'org.apache.httpcomponents:httpcore:4.2.2'
     testCompile 'junit:junit:4.11'
 }
 
 group = 'ua.pp.msk.gradle'
-version = '1.0'
+version = '1.0.0'
+
+
+task wrapper(type: Wrapper) { gradleVersion = '2.10' }
+
 
 
 uploadArchives {
     repositories {
+    
         mavenDeployer {
-            repository(url: uri('/tmp/lmr'))
+            repository(url: uri("/tmp/lmr")) {
+           
+                pom.project {
+                    groupId "${project.group}"
+                    artifactId "${project.name}"
+                    version "${project.version}"
+
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+                    scm {
+                        url "https://github.com/maskimko/CliQrGradlePlugin.git";
+                        connection "https://github.com/maskimko/CliQrGradlePlugin.git";
+                        developerConnection "https://github.com/maskimko/CliQrGradlePlugin.git";
+                    }
+                    developers {
+                        developer {
+                            id "maskimko";
+                            name "Maksym Shkolnyi";
+                            email "maskimko@ukr.net";
+                        }
+                    }
+                    
+                }
+                authentication(userName: 'maskimko')
+            }
+          
         }
     }
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom.withXml {
+                asNode().appendNode('description',
+                                'CliQr gradle plugin to manage CliQr jobs')
+                def l = asNode().appendNode('licenses').appendNode('license')
+                l.appendNode('name','The Apache Software License, Version 2.0')
+                l.appendNode('url','http://www.apache.org/licenses/LICENSE-2.0.txt')
+                l.appendNode('distribution', 'repo')
+                 
+                def s= asNode().appendNode('scm')
+                s.appendNode('url', "https://github.com/maskimko/CliQrGradlePlugin.git")
+                s.appendNode('connection', "https://github.com/maskimko/CliQrGradlePlugin.git")
+                s.appendNode('developerConnection', "https://github.com/maskimko/CliQrGradlePlugin.git")
+                        
+                def d = asNode().appendNode('developers').appendNode('developer')
+                d.appendNode('id', "maskimko")
+                d.appendNode('name', "Maksym Shkolnyi")
+                d.appendNode('email', "maskimko@ukr.net")
+            }
+        }
+    }
+}
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username "maskimko"
+                password ""
+            }
+            name 'ossrh'
+            if(project.version.endsWith('-SNAPSHOT')) {
+                url "https://oss.sonatype.org/content/repositories/snapshots"
+                //url uri('/tmp/lmr')
+            } else {
+                url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            }
+        }
+        
+    }
+}
+
+
+
