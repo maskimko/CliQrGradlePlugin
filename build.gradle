@@ -5,6 +5,17 @@ repositories {
     mavenCentral()
 }
 
+
+task sourcesJar(type: Jar, dependsOn: classes, description: 'Creates a jar from the source files.') {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives sourcesJar
+}
+
 dependencies {
     compile gradleApi()
     //compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.2'
