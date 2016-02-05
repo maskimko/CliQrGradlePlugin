@@ -108,7 +108,6 @@ public interface RunJob {
      * Key Value input
      *
      * @param jobId Number of job type
-     * @param serviceTierId Number of service tier in CliQr
      * @param options key=value[$key=value...]
      * @throws ua.pp.msk.cliqr.exceptions.RunJobException This is
      * consolidated exception if something goes wrong.
@@ -129,7 +128,7 @@ public interface RunJob {
      * @param apip Attach Public IP
      * @param envPairs
      * @throws ua.pp.msk.cliqr.exceptions.RunJobException
-     * @throws ua.pp.msk.cliqr.exceptions.MissingParameterException
+     * @throws ua.pp.msk.cliqr.exceptions.MissingParameterException 
      */
     public void startJob(int jobId, String serviceTierId, String appName, String cloudName, String vpcId, String network, 
             String env, String inst, boolean apip, Map<String, String> envPairs)throws RunJobException, MissingParameterException;
