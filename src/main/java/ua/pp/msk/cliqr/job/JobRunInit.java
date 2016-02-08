@@ -16,11 +16,9 @@
 
 package ua.pp.msk.cliqr.job;
 
-import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import java.util.List;
 import java.util.Map;
 

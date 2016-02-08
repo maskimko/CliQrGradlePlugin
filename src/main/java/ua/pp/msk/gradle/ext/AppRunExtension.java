@@ -16,6 +16,8 @@
 package ua.pp.msk.gradle.ext;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,21 +31,30 @@ public class AppRunExtension {
     private String instanceSize = null;
     private String appName = null;
     private String serviceTierId = appName + "-" + appId;
-
+    private String version = "1.0";
+    @Deprecated
     private String vpcId = null;
     private String sId = null;
     private String cloud = null;
     private boolean publicIp = false;
+    private Map<String, String> params = new HashMap<>();
 
+    
     public String getCloud() {
         return cloud;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public void setCloud(String cloud) {
         this.cloud = cloud;
     }
-
-    private Map<String, String> params = new HashMap<>();
 
     public int getAppId() {
         return appId;
@@ -93,10 +104,12 @@ public class AppRunExtension {
         this.appName = appName;
     }
 
+    @Deprecated
     public String getVpcId() {
         return vpcId;
     }
 
+    @Deprecated
     public void setVpcId(String vpcId) {
         this.vpcId = vpcId;
     }
@@ -116,5 +129,7 @@ public class AppRunExtension {
     public void setPublicIp(boolean publicIp) {
         this.publicIp = publicIp;
     }
+    
+    
 
 }

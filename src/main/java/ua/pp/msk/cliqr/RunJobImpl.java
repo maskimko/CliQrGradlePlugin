@@ -15,7 +15,6 @@
  */
 package ua.pp.msk.cliqr;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -40,8 +39,6 @@ import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +64,6 @@ public class RunJobImpl implements RunJob {
 
     @Override
     public void startJob() {
-        Gson gson = new GsonBuilder().create();
         JsonParser jp = new JsonParser();
         JsonElement parsedJson = jp.parse(new InputStreamReader(System.in));
         launchJob(parsedJson.getAsJsonObject());
@@ -135,8 +131,9 @@ public class RunJobImpl implements RunJob {
                 }
                 counter++;
             }
-           properties.put(Validator.SERVICETIERID, ""+serviceTierId);
-            startJob(jobId, properties);
+            properties.put(Validator.SERVICETIERID, "" + serviceTierId);
+            properties.put(APPID, "" + jobId);
+            startJob(properties);
         } catch (FileNotFoundException ex) {
             throw new RunJobException("Cannot run the job, because specified file " + file.getAbsolutePath() + "was not found", ex);
         } catch (IOException ex) {
@@ -145,37 +142,33 @@ public class RunJobImpl implements RunJob {
     }
 
     @Override
-    public void startJob(int jobId, Map<String, String> options) throws MissingParameterException {
-        //Logging
-        if (logger.isDebugEnabled()) {
-            if (options.isEmpty()) {
-                logger.warn("We received an empty options map");
-            } else {
-                logger.debug("These options have been passed to the startJob method");
-                options.forEach((k, v) -> {
-                    logger.debug(k + " = " + v);
-                });
-            }
+    public String startJob(Map<String, String> options) throws MissingParameterException {
+
+        if (options.isEmpty()) {
+            logger.warn("We received an empty options map");
+        } else {
+            logger.debug("These options have been passed to the startJob method");
+            options.forEach((k, v) -> {
+                logger.debug(k + " = " + v);
+            });
         }
-        //End of logging
         JsonObject jo = new JsonObject();
 
-        String sti = (options.containsKey(Validator.SERVICETIERID)) ? options.get("serviceTierId") : options.get(APPNAME) + "-" + options.get(APPID);
+        if (!options.containsKey(APPNAME)) {
+            throw new MissingParameterException("You should provide application name ");
+        }
+        if (!options.containsKey(APPID)) {
+            throw new MissingParameterException("You should provide application id ");
+        }
+        String sti = (options.containsKey(Validator.SERVICETIERID)) ? options.get(Validator.SERVICETIERID) : String.format("%s-%d", options.get(APPNAME), Integer.parseInt(options.get(APPID)));;
         jo.addProperty(Validator.SERVICETIERID, sti);
         options.put(Validator.SERVICETIERID, sti);
 
-        if (!options.containsKey(APPNAME) && !options.containsKey(Validator.SERVICETIERID)) {
-            throw new MissingParameterException("You should provide application name or service tier id");
+        if (!options.containsKey(Validator.VERSION)) {
+            throw new MissingParameterException("You should provide application Version id");
         }
-        if (!options.containsKey(APPID) && !options.containsKey(Validator.SERVICETIERID)) {
-            throw new MissingParameterException("You should provide application id or service tier id");
-        }
-
         if (!options.containsKey(Validator.CLOUD)) {
             throw new MissingParameterException("You must provide cloud name");
-        }
-        if (!options.containsKey(VPCID)) {
-            throw new MissingParameterException("You must provide VPC ID");
         }
 
         if (!options.containsKey(NETWORK)) {
@@ -197,25 +190,31 @@ public class RunJobImpl implements RunJob {
             logger.warn("Will not attach public IP");
         }
 
-        jo.addProperty(Validator.NAME, options.get(Validator.NAME));
+        String generatedName = String.format("%s-%s-%s-%d", options.get(APPNAME) , options.get(APPID), (options.get(Validator.ENVNAME) == null) ? "GeneratedEnvName": options.get(Validator.ENVNAME), System.currentTimeMillis()/1000);
+        jo.addProperty(Validator.NAME, generatedName);
         jo.addProperty(Validator.ENVIRONMENT, options.get(Validator.ENVIRONMENT));
+        jo.addProperty(Validator.VERSION, options.get(Validator.VERSION));
+
         JsonArray cloudProperties = new JsonArray();
         JsonArray applicationParameters = new JsonArray();
         JsonObject cloudParameters = new JsonObject();
 
-        cloudProperties.add(getJsonPairObject(VPCID, options.get(VPCID)));
+        cloudProperties.add(getJsonPairObject(Validator.USERCLUSTERNAME, options.get(Validator.USERCLUSTERNAME)));
+        cloudProperties.add(getJsonPairObject(Validator.USERDATACENTERNAME, options.get(Validator.USERDATACENTERNAME)));
+        cloudProperties.add(getJsonPairObject(Validator.USERDATASTORECLUSTER, options.get(Validator.USERDATASTORECLUSTER)));
         cloudProperties.add(getJsonPairObject(PIP, options.get(PIP)));
         cloudProperties.add(getJsonPairObject(NETWORK, options.get(NETWORK)));
-
         cloudParameters.addProperty(Validator.CLOUD, options.get(Validator.CLOUD));
         cloudParameters.addProperty(Validator.INSTANCE, options.get(Validator.INSTANCE));
         cloudParameters.add(Validator.CLOUDPROPERTIES, cloudProperties);
 
-        for (Entry<String, String> entry : options.entrySet()) {
-            if (isSecondaryKey(entry.getKey())) {
-                applicationParameters.add(getJsonPairObject(entry));
-            }
-        }
+        //Will remove this
+//        options.entrySet().stream().filter((entry) -> (isSecondaryKey(entry.getKey()))).forEach((entry) -> {
+//            applicationParameters.add(getJsonPairObject(entry));
+//        });
+        options.forEach((k, v) -> {
+            applicationParameters.add(getJsonPairObject(k, v));
+        });
 
         JsonObject parameters = new JsonObject();
         parameters.add(Validator.CLOUDPARAMETERS, cloudParameters);
@@ -232,14 +231,15 @@ public class RunJobImpl implements RunJob {
         if (options.containsKey(JOBSERVICETIERID)) {
             jobObj.addProperty(Validator.SERVICETIERID, options.get(JOBSERVICETIERID));
         } else {
-            jobObj.addProperty(Validator.SERVICETIERID, options.get(Validator.SERVICETIERID));
+            String jsti = String.format("%s-%d", options.get(APPNAME), Integer.parseInt(options.get(APPID)) + 1);
+            jobObj.addProperty(Validator.SERVICETIERID, jsti);
         }
         jobs.add(jobObj);
         jo.add(Validator.JOBS, jobs);
 
         jo.add(Validator.PARAMETERS, parameters);
         logger.debug("Using given options map we construct this json object\n" + new GsonBuilder().setPrettyPrinting().create().toJson(jo));
-        launchJob(jo);
+        return launchJob(jo);
     }
 
     private String launchJob(JsonObject jo) {
@@ -247,6 +247,13 @@ public class RunJobImpl implements RunJob {
         if (processor != null) {
             try {
                 response = processor.getResponse(true, API_PREFIX, jo);
+                if (processor.getLocation()!=null){
+                    if (response!=null){
+                        response = response + processor.getLocation().toString();
+                    } else {
+                        response = processor.getLocation().toString();
+                    }
+                }
             } catch (ResponseException ex) {
                 logger.error("Cannot execute request", ex);
             }
@@ -268,6 +275,7 @@ public class RunJobImpl implements RunJob {
         return new AbstractMap.SimpleEntry<>(pair[0], pair[1]);
     }
 
+    @Deprecated
     private JsonObject getJsonPairObject(Map.Entry<String, String> entry) {
         return getJsonPairObject(entry.getKey(), entry.getValue());
     }
@@ -280,11 +288,14 @@ public class RunJobImpl implements RunJob {
     }
 
     private boolean isSecondaryKey(String key) {
-        boolean result = true;
+        boolean result;
         switch (key) {
             case Validator.SERVICETIERID:
             case Validator.NAME:
             case Validator.ENVIRONMENT:
+            case Validator.USERCLUSTERNAME:
+            case Validator.USERDATACENTERNAME:
+            case Validator.USERDATASTORECLUSTER:
             case VPCID:
             case PIP:
             case NETWORK:
@@ -300,18 +311,22 @@ public class RunJobImpl implements RunJob {
     }
 
     @Override
-    public void startJob(int jobId, String serviceTierId, String appName, 
-            String cloudName, String vpcId, String network, String env, 
-            String inst, boolean apip, Map<String, String> envPairs) throws  MissingParameterException {
-        
-        envPairs.put(Validator.SERVICETIERID, serviceTierId);
+    public String startJob(int appId, String serviceTierId, String appName, String appVersion,
+            String cloudName, String network, String env,
+            String inst, boolean apip, Map<String, String> envPairs) throws MissingParameterException {
+
+        if (!(serviceTierId != null && serviceTierId.length() > 0)) {
+            envPairs.put(Validator.SERVICETIERID, serviceTierId);
+        }
         envPairs.put(Validator.NAME, appName);
         envPairs.put(Validator.CLOUD, cloudName);
-        envPairs.put(VPCID, vpcId);
         envPairs.put(NETWORK, network);
         envPairs.put(Validator.ENVIRONMENT, env);
         envPairs.put(Validator.INSTANCE, inst);
-        envPairs.put(PIP, ""+apip);
-        startJob(jobId, envPairs);
+        envPairs.put(PIP, "" + apip);
+        envPairs.put(Validator.VERSION, appVersion);
+        envPairs.put(APPID, "" + appId);
+        envPairs.put(APPNAME, appName);
+        return startJob(envPairs);
     }
 }

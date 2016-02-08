@@ -16,6 +16,7 @@
 package ua.pp.msk.cliqr;
 
 import com.google.gson.JsonObject;
+import java.net.URL;
 import ua.pp.msk.cliqr.exceptions.ResponseException;
 
 /**
@@ -37,4 +38,10 @@ public interface PostProcessor {
      * @throws ua.pp.msk.cliqr.exceptions.ResponseException General response exception
      */
     public String getResponse(String apiPath, String entity) throws ResponseException;
+    
+    /**
+     * 
+     * @return the location of started job instance
+     */
+    public URL getLocation();
 }

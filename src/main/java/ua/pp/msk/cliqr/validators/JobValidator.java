@@ -15,8 +15,6 @@
  */
 package ua.pp.msk.cliqr.validators;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -73,6 +71,13 @@ public class JobValidator extends Validator {
         } else {
             if (json.get(NAME).isJsonNull() || json.get(NAME).getAsString().isEmpty()) {
                 throw new MissingParameterException("Name element is empty or null value");
+            }
+        }
+         if (!json.has(VERSION)) {
+            throw new MissingParameterException("Missing name element");
+        } else {
+            if (json.get(VERSION).isJsonNull() || json.get(VERSION).getAsString().isEmpty()) {
+                throw new MissingParameterException("AppVersion element is empty or null value");
             }
         }
         if (!json.has(ENVIRONMENT)) {

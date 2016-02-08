@@ -28,6 +28,7 @@ public abstract class Validator {
     public static final String SERVICETIERID = "serviceTierId";
     public static final String ENVIRONMENT = "environment";
     public static final String PARAMETERS = "parameters";
+    public static final String VERSION = "appVersion";
     public static final String CLOUDPARAMETERS = "cloudParams";
     public static final String APPLICATIONPARAMENTERS = "appParams";
     public static final String JOBS = "jobs";
@@ -36,6 +37,12 @@ public abstract class Validator {
     public static final String INSTANCE = "instance";
     public static final String NAME = "name";
     public static final String VALUE = "value";
+    public static final String USERDATACENTERNAME = "UserDataCenterName";
+    public static final String USERCLUSTERNAME = "UserClusterName";
+    public static final String USERDATASTORECLUSTER = "UserDatastoreCluster";
+    public static final String VIPPOOLNAME = "VIP_POOL_NAME";
+    public static final String MINCLUSTERSIZE = "minClusterSize";
+    public static final String ENVNAME = "ENV_NAME";
 
     public abstract boolean validate(String json) throws ParseException, ParameterException;
 

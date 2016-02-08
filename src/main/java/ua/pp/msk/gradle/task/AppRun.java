@@ -33,7 +33,7 @@ import ua.pp.msk.cliqr.exceptions.RunJobException;
  * @author Maksym Shkolnyi aka maskimko
  */
 public class AppRun extends DefaultTask {
-
+    
     @TaskAction
     public void start() {
         getLogger().info("Starting Run task");
@@ -45,7 +45,7 @@ public class AppRun extends DefaultTask {
         if (cx == null) {
             cx = new CliQrExtension();
         }
-
+        
         getLogger().debug("CliQr host " + cx.getHost());
         getLogger().debug("CliQr user " + cx.getUser());
         getLogger().debug("CliQr apiKey " + cx.getApiKey());
@@ -61,7 +61,7 @@ public class AppRun extends DefaultTask {
             URL cqUrl = new URL("https://" + cx.getHost());
             rji.setProcessor(new PostProcessorImpl(cqUrl, cx.getUser(), cx.getApiKey()));
             rj = rji;
-
+            
         } catch (ClientSslException ex) {
             getLogger().error("SSL Error", ex);
         } catch (MalformedURLException ex) {
@@ -69,8 +69,10 @@ public class AppRun extends DefaultTask {
         }
         try {
             if (rj != null) {
-                rj.startJob(rtx.getAppId(), rtx.getServiceTierId(), rtx.getAppName(), rtx.getCloud(), rtx.getVpcId(),
+                String response = rj.startJob(rtx.getAppId(), rtx.getServiceTierId(), rtx.getAppName(), rtx.getVersion(), rtx.getCloud(),
                         rtx.getNetwork(), rtx.getEnvironment(), rtx.getInstanceSize(), rtx.isPublicIp(), rtx.getParams());
+                getLogger().debug("Server response:\n" + response);
+                cx.setLocation(response);
             } else {
                 throw new RunJobException("Run job has been not initialized");
             }

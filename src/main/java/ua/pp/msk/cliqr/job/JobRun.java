@@ -56,10 +56,6 @@ public class JobRun {
     public void addCloudParameter(String name, String value){
         getParameters().getCloudParameters().getCloudProperties().put(name, value);
     }
-    
-    public void setInstance(String instance){
-        
-    }
 
     public Parameters getParameters() {
         return parameters;

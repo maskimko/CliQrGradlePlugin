@@ -28,6 +28,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -64,6 +65,7 @@ public class PostProcessorImpl implements PostProcessor {
     private HttpClient client;
     private final ResponseHelper responseHelper;
     private HttpContext context;
+    private URL location= null;
 
     {
         logger = LoggerFactory.getLogger(this.getClass());
@@ -150,6 +152,7 @@ public class PostProcessorImpl implements PostProcessor {
     @Override
     public String getResponse(boolean pretty, String apiPath, JsonObject json) throws ResponseException {
         String response = null;
+        location = null;
         try {
             HttpPost httpPost = new HttpPost(targetUrl.toString() + apiPath);
             httpPost.setHeader("Content-Type", "application/json");
@@ -158,6 +161,16 @@ public class PostProcessorImpl implements PostProcessor {
             StringEntity sEntity = new StringEntity(responseHelper.jsonToString(json));
             httpPost.setEntity(sEntity);
             HttpResponse  postResponse = client.execute(httpPost, context);
+            
+            
+          for (Header hdr : postResponse.getAllHeaders()) {
+              if (hdr.getName().equals("Location")) {
+                  logger.debug("Got first location header record "+hdr.getValue());
+                  location = new URL(hdr.getValue());
+                  break;
+              }
+          }
+            
                 logger.debug("Status line: " + postResponse.getStatusLine().toString());
                 int statusCode = postResponse.getStatusLine().getStatusCode();
                 switch (statusCode) {
@@ -200,5 +213,10 @@ public class PostProcessorImpl implements PostProcessor {
             throw new ResponseException("Malformed Json", ex);
         }
         return result;
+    }
+
+    @Override
+    public URL getLocation() {
+        return location;
     }
 }

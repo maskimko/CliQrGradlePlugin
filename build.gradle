@@ -6,7 +6,7 @@ apply plugin: 'signing'
 
 
 group = 'ua.pp.msk.gradle'
-version = '1.0.0'
+version = '1.0.2-SNAPSHOT'
 
 
 
@@ -53,9 +53,11 @@ uploadArchives {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
            
-            snapshotRepository (url: "https://oss.sonatype.org/content/repositories/snapshots", id: "ossrh"){
-                authentication(userName: System.properties['ossrh_user'], password: System.properties['ossrh_password'])
-            }
+            
+            snapshotRepository(url: uri('/tmp/lmr'))
+//            snapshotRepository (url: "https://oss.sonatype.org/content/repositories/snapshots", id: "ossrh"){
+//                authentication(userName: System.properties['ossrh_user'], password: System.properties['ossrh_password'])
+//            }
                
             
             repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/", id: "ossrh") {
@@ -97,49 +99,6 @@ uploadArchives {
     }
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            pom.withXml {
-                asNode().appendNode('description',
-                                'CliQr gradle plugin to manage CliQr jobs')
-                def l = asNode().appendNode('licenses').appendNode('license')
-                l.appendNode('name','The Apache Software License, Version 2.0')
-                l.appendNode('url','http://www.apache.org/licenses/LICENSE-2.0.txt')
-                l.appendNode('distribution', 'repo')
-                 
-                def s= asNode().appendNode('scm')
-                s.appendNode('url', "https://github.com/maskimko/CliQrGradlePlugin.git")
-                s.appendNode('connection', "https://github.com/maskimko/CliQrGradlePlugin.git")
-                s.appendNode('developerConnection', "https://github.com/maskimko/CliQrGradlePlugin.git")
-                        
-                def d = asNode().appendNode('developers').appendNode('developer')
-                d.appendNode('id', "maskimko")
-                d.appendNode('name', "Maksym Shkolnyi")
-                d.appendNode('email', "maskimko@ukr.net")
-            }
-        }
-    }
-}
-publishing {
-    repositories {
-        maven {
-            credentials {
-                username System.properties['ossrh_user']
-                password System.properties['ossrh_password']
-            }
-            name 'ossrh'
-            if(project.version.endsWith('-SNAPSHOT')) {
-                url "https://oss.sonatype.org/content/repositories/snapshots"
-                //url uri('/tmp/lmr')
-            } else {
-                url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-            }
-        }
-        
-    }
-}
 
 
 

@@ -27,7 +27,7 @@ import java.util.Map;
 public interface RunJob {
 
     
-    public static final String APPID = "addId";
+    public static final String APPID = "appId";
     /**
      * Virtual private cloud ID
      */
@@ -107,29 +107,30 @@ public interface RunJob {
     /**
      * Key Value input
      *
-     * @param jobId Number of job type
      * @param options key=value[$key=value...]
+     * @return Server response
      * @throws ua.pp.msk.cliqr.exceptions.RunJobException This is
      * consolidated exception if something goes wrong.
      * @throws ua.pp.msk.cliqr.exceptions.MissingParameterException if options does not contain required exception
      */
-    public void startJob(int jobId,  Map<String, String> options) throws RunJobException, MissingParameterException;
+    public String startJob( Map<String, String> options) throws RunJobException, MissingParameterException;
 
     /**
      * 
      * @param jobId CliQr application Id to run
      * @param serviceTierId Service Tier Id of machine to run
      * @param appName CliQr Application Name
+     * @param appVersion
      * @param cloudName CliQr Cloud name
-     * @param vpcId VPC id
      * @param network Network name
      * @param env CliQr Environment name
      * @param inst Instance size
      * @param apip Attach Public IP
      * @param envPairs
-     * @throws ua.pp.msk.cliqr.exceptions.RunJobException
-     * @throws ua.pp.msk.cliqr.exceptions.MissingParameterException 
+     * @return Returns server response
+     * @throws ua.pp.msk.cliqr.exceptions.RunJobException In the case of failure
+     * @throws ua.pp.msk.cliqr.exceptions.MissingParameterException In the case of Missing parameter. 
      */
-    public void startJob(int jobId, String serviceTierId, String appName, String cloudName, String vpcId, String network, 
+    public String startJob(int jobId, String serviceTierId, String appName, String appVersion, String cloudName, String network, 
             String env, String inst, boolean apip, Map<String, String> envPairs)throws RunJobException, MissingParameterException;
 }
