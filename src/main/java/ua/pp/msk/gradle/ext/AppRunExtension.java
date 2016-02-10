@@ -16,8 +16,6 @@
 package ua.pp.msk.gradle.ext;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,14 +30,23 @@ public class AppRunExtension {
     private String appName = null;
     private String serviceTierId = appName + "-" + appId;
     private String version = "1.0";
-    @Deprecated
-    private String vpcId = null;
-    private String sId = null;
+    private String network = null;
     private String cloud = null;
     private boolean publicIp = false;
     private Map<String, String> params = new HashMap<>();
+private int wait = -1;
+private String errorMessage;
+private String output;
 
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
+    }
     
+
     public String getCloud() {
         return cloud;
     }
@@ -104,22 +111,12 @@ public class AppRunExtension {
         this.appName = appName;
     }
 
-    @Deprecated
-    public String getVpcId() {
-        return vpcId;
-    }
-
-    @Deprecated
-    public void setVpcId(String vpcId) {
-        this.vpcId = vpcId;
-    }
-
-    public String getNetwork() {
-        return sId;
+      public String getNetwork() {
+        return network;
     }
 
     public void setNetwork(String sId) {
-        this.sId = sId;
+        this.network = sId;
     }
 
     public boolean isPublicIp() {
@@ -129,7 +126,26 @@ public class AppRunExtension {
     public void setPublicIp(boolean publicIp) {
         this.publicIp = publicIp;
     }
+/**
+ * Default value -1 means not to wait until job starting is finished
+ * @return Job result waiting timeout in seconds
+ */
+    public int getWait() {
+        return wait;
+    }
+
+    public void setWait(int wait) {
+        this.wait = wait;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
     
-    
+      
 
 }

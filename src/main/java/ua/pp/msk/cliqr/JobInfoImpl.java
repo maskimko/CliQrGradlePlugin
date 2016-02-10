@@ -17,6 +17,7 @@ package ua.pp.msk.cliqr;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import ua.pp.msk.cliqr.exceptions.ClientSslException;
 import ua.pp.msk.cliqr.exceptions.ResponseException;
@@ -52,6 +53,23 @@ public class JobInfoImpl extends InfoImpl implements JobInfo {
        
         ops.println(getInfo("jobs/"+jobNumber));
     }
+
+    @Override
+    public ParsedJob getParsedJobInfo(int jobNumber) throws MalformedURLException, ClientSslException, ResponseException {
+       ParsedJob pj = null;
+        String info = getInfo("jobs/"+jobNumber);
+          GsonBuilder gbuilder = new GsonBuilder();
+        gbuilder.registerTypeAdapter(ParsedJob.class, new ParsedJob.JobDeserializer());
+         Gson gson = gbuilder.create();
+            try { 
+            pj = gson.fromJson(info, ParsedJob.class);
+        } catch (JsonSyntaxException je){
+            LoggerFactory.getLogger(this.getClass()).error("Cannot deserialize jobs", je);
+        }
+            return pj;
+    }
+    
+    
 
     @Override
     public void getJobInfo() throws MalformedURLException, ClientSslException, ResponseException {

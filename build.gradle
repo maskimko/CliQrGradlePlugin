@@ -6,7 +6,7 @@ apply plugin: 'signing'
 
 
 group = 'ua.pp.msk.gradle'
-version = '1.0.2-SNAPSHOT'
+version = '1.0.3-SNAPSHOT'
 
 
 
@@ -59,10 +59,10 @@ uploadArchives {
 //                authentication(userName: System.properties['ossrh_user'], password: System.properties['ossrh_password'])
 //            }
                
-            
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/", id: "ossrh") {
-                authentication(userName: System.properties['ossrh_user'], password: System.properties['ossrh_password'])
-            }
+            repository(url: uri('/tmp/lmr'))
+//            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/", id: "ossrh") {
+//                authentication(userName: System.properties['ossrh_user'], password: System.properties['ossrh_password'])
+//            }
             pom.project {
                 groupId "${project.group}"
                 artifactId "${project.name}"

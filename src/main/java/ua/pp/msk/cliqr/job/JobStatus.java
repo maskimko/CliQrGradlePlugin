@@ -20,5 +20,5 @@ package ua.pp.msk.cliqr.job;
  * @author Maksym Shkolnyi aka maskimko
  */
 public enum JobStatus {
-    Canceled,Error,Running,Scaling,Starting,Stopped,Stopping
+    JobCanceled,JobError,JobRunning,JobScaling,JobStarting,JobStopped,JobStopping,JobInProgress
 }

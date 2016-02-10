@@ -15,11 +15,13 @@
  */
 package ua.pp.msk.cliqr;
 
+import com.google.gson.JsonElement;
 import ua.pp.msk.cliqr.exceptions.ClientSslException;
 import ua.pp.msk.cliqr.exceptions.ResponseException;
 import ua.pp.msk.cliqr.job.JobFilter;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
+import ua.pp.msk.cliqr.job.ParsedJob;
 
 /**
  *
@@ -28,6 +30,7 @@ import java.net.MalformedURLException;
 public interface JobInfo {
 
     public void getJobInfo(int jobNumber) throws MalformedURLException, ClientSslException, ResponseException;
+    public ParsedJob getParsedJobInfo(int jobNumber)  throws MalformedURLException, ClientSslException, ResponseException;
     public void getJobInfo() throws MalformedURLException, ClientSslException, ResponseException;
     public void getJobInfo(JobFilter... filter) throws MalformedURLException, ClientSslException, ResponseException;
     public PrintStream getOutputStream();
