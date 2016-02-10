@@ -37,6 +37,7 @@ public class AppRunExtension {
 private int wait = -1;
 private String errorMessage;
 private String output;
+private int jobId = -1;
 
     public String getOutput() {
         return output;
@@ -126,6 +127,15 @@ private String output;
     public void setPublicIp(boolean publicIp) {
         this.publicIp = publicIp;
     }
+
+    public int getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(int jobId) {
+        this.jobId = jobId;
+    }
+    
 /**
  * Default value -1 means not to wait until job starting is finished
  * @return Job result waiting timeout in seconds

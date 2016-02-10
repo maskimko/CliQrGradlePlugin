@@ -23,7 +23,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.sun.java.swing.plaf.windows.WindowsTreeUI;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -208,12 +207,15 @@ public class ParsedJob {
 
     @Override
     public String toString() {
-      return  String.format("Cliqr Job %d information:\n================\n"+
-               "job name: %s\napplication id: %d\napplication name: %s\nversion: %s\ncloud: %s\n"+
-               "started by: %s\nstart time: %tF\nend time: %tF\nenvironment: %s\n"
+      String st = startTime== null ? "N/A" : String.format("%tF", startTime.getTime());
+      String et = endTime == null ? "N/A" : String.format("%tF", endTime.getTime());
+      String u = resource == null ? "N/A" : resource.toString();
+        return  String.format("Cliqr Job %d information:\n================\n"+
+               "job name: %s\nurl: %s\napplication id: %d\napplication name: %s\nversion: %s\ncloud: %s\n"+
+               "started by: %s\nstart time: %s\nend time: %s\nenvironment: %s\n"
                        + "environment id: %d\n"
-               + "ip addresses: %s\nmessage: %s\nstatus: %s", id, name, appId, appName, appVersion, 
-               cloud, startTime.getTime(), endTime.getTime(), environment, environmentId, Arrays.toString(ipAddresses), message, status);
+               + "ip addresses: %s\nmessage: %s\nstatus: %s", id, name, u, appId, appName, appVersion, 
+               cloud, depInitiatingUserId, st, et, environment, environmentId, Arrays.toString(ipAddresses), message, status);
     }
 
     

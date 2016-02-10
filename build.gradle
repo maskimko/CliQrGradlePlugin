@@ -54,10 +54,10 @@ uploadArchives {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
            
             
-            snapshotRepository(url: uri('/tmp/lmr'))
-//            snapshotRepository (url: "https://oss.sonatype.org/content/repositories/snapshots", id: "ossrh"){
-//                authentication(userName: System.properties['ossrh_user'], password: System.properties['ossrh_password'])
-//            }
+//            snapshotRepository(url: uri('/tmp/lmr'))
+            snapshotRepository (url: "https://oss.sonatype.org/content/repositories/snapshots", id: "ossrh"){
+                authentication(userName: System.properties['ossrh_user'], password: System.properties['ossrh_password'])
+            }
                
             repository(url: uri('/tmp/lmr'))
 //            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/", id: "ossrh") {

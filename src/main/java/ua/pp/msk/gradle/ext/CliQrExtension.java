@@ -25,17 +25,6 @@ public class CliQrExtension {
     private String user = "cicdgroup_5";
     private String apiKey = "16EE49C5337B327D";
     
-    private String location;
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-    
-    
     public String getHost() {
         return host;
     }
@@ -58,10 +47,5 @@ public class CliQrExtension {
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
-    }
-    
-    public String getLastRunId(){
-        String[] chunks = location.split("/");
-        return chunks[chunks.length-1];
     }
 }

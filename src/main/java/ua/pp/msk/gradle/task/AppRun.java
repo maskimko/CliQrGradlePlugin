@@ -83,11 +83,13 @@ public class AppRun extends DefaultTask {
                 String response = rj.startJob(rtx.getAppId(), rtx.getServiceTierId(), rtx.getAppName(), rtx.getVersion(), rtx.getCloud(),
                         rtx.getNetwork(), rtx.getEnvironment(), rtx.getInstanceSize(), rtx.isPublicIp(), rtx.getParams());
                 getLogger().debug("Server response:\n" + response);
-                cx.setLocation(response);
+               // cx.setLocation(response);
+               
                 if (rtx.getWait() >=0 && response != null && response.length()> 0) {
                     try {
                     String[] splitedUrl = response.split("/");
                     int jid = Integer.parseInt(splitedUrl[splitedUrl.length-1]);
+                     rtx.setJobId(jid);
                         boolean result = wait(jid, rtx, cx);
                         System.out.println((result) ?"Job successfully started" : "Job has failed to start");
                     } catch (NumberFormatException ex){
@@ -112,7 +114,7 @@ public class AppRun extends DefaultTask {
                 output = System.out;
                 getLogger().debug("CliQr Info output to stdout");
             } else {
-                File of = new File(rtx.getOutput());
+                File of = new File(rtx.getOutput().trim().concat("."+jobId));
                 of.getParentFile().mkdirs();
                 output = new PrintStream(new FileOutputStream(of));
                 getLogger().debug("CliQr Info output to file " + rtx.getOutput());
